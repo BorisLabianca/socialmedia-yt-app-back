@@ -4,6 +4,7 @@ const morgan = require("morgan");
 const bodyParser = require("body-parser");
 const helmet = require("helmet");
 const connectDB = require("./database");
+const { errorMiddleware } = require("./middlewares/error");
 
 require("dotenv").config();
 
@@ -16,6 +17,7 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.json({ limmit: "10mb" }));
 app.use(express.urlencoded({ extended: true }));
 app.use(morgan("dev"));
+app.use(errorMiddleware);
 
 app.all("*", (req, res) => {
   res.status(404).json({ error: "Route not found." });
