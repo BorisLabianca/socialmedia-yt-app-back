@@ -1,10 +1,11 @@
 const nodemailer = require("nodemailer");
 const { hashString } = require(".");
 const EmailVerification = require("../models/EmailVerification");
-const { v4: uuidv4 } = requie("uuid");
+const { v4: uuidv4 } = require("uuid");
 
 let transporter = nodemailer.createTransport({
   host: "smtp-mail.outlook.com",
+  port: 587,
   auth: {
     user: process.env.AUTH_EMAIL,
     pass: process.env.AUTH_PASSWORD,

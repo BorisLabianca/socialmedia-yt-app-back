@@ -8,6 +8,8 @@ const { errorMiddleware } = require("./middlewares/error");
 
 require("dotenv").config();
 
+const authRoutes = require("./routes/auth");
+
 const app = express();
 
 app.use(cors());
@@ -17,11 +19,14 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.json({ limmit: "10mb" }));
 app.use(express.urlencoded({ extended: true }));
 app.use(morgan("dev"));
-app.use(errorMiddleware);
+
+app.use("/api/auth", authRoutes);
 
 app.all("*", (req, res) => {
   res.status(404).json({ error: "Route not found." });
 });
+
+app.use(errorMiddleware);
 
 app.listen(process.env.PORT, () => {
   connectDB();

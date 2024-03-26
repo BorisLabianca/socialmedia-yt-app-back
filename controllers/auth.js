@@ -20,7 +20,7 @@ exports.register = async (req, res) => {
       firstName,
       lastName,
       email,
-      password,
+      password: hashedPassword,
     });
 
     await newUser.save();
@@ -52,14 +52,13 @@ exports.login = async (req, res) => {
         error:
           "Email not verified. Please, check your eamil account and verify your email address.",
       });
-
     const isMatch = await comparePassword(password, user?.password);
 
     if (!isMatch)
       return res.status(401).json({ error: "Invalid email or password." });
 
     const token = createJWT(user?._id);
-
+    user.password = null;
     res.status(201).json({
       success: true,
       message: "Login successfull.",
