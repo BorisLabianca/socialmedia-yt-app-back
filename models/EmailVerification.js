@@ -3,8 +3,8 @@ const mongoose = require("mongoose");
 const EmailVerificationSchema = new mongoose.Schema({
   userId: String,
   token: String,
-  createdat: Date,
-  expiresdat: Date,
+  createdAt: Date,
+  expiresAt: Date,
 });
 
 const EmailVerification = mongoose.model(
