@@ -2,6 +2,7 @@ const nodemailer = require("nodemailer");
 const { hashString } = require(".");
 const EmailVerification = require("../models/EmailVerification");
 const { v4: uuidv4 } = require("uuid");
+const PasswordReset = require("../models/PasswordReset");
 
 let transporter = nodemailer.createTransport({
   host: "smtp-mail.outlook.com",
@@ -76,4 +77,52 @@ exports.sendVerificationEmail = async (user, res) => {
       .status(404)
       .json({ message: "Something went wrong. Please, try again." });
   }
+};
+
+exports.resetPasswordLink = async (user, res) => {
+  const { _id, email } = user;
+
+  const token = _id + uuidv4();
+  const link = `${process.env.APP_URL}user/reset-password/${_id}/${token}`;
+
+  const mailOptions = {
+    from: process.env.AUTH_EMAIL,
+    to: email,
+    subject: "Password Reset",
+    html: `<p style="font-family: Arial, sans-serif; font-size: 16px; color: #333; background-color: #f7f7f7; padding: 20px; border-radius: 5px;">
+    Password reset link. Please click the link below to reset password.
+   <br>
+   <p style="font-size: 18px;"><b>This link expires in 10 minutes</b></p>
+    <br>
+   <a href=${link} style="color: #fff; padding: 10px; text-decoration: none; background-color: #000;  border-radius: 8px; font-size: 18px; ">Reset Password</a>.
+</p>`,
+  };
+
+  try {
+    const hashedToken = await hashString(token);
+    const resetEmail = await PasswordReset.create({
+      userId: _id,
+      email,
+      token: hashedToken,
+      createdAt: Date.now(),
+      expiresAt: Date.now() + 600000,
+    });
+
+    if (resetEmail) {
+      transporter
+        .sendMail(mailOptions)
+        .then(() => {
+          res.status(201).json({
+            success: "PENDING",
+            message: "Reset password link has been sent to your email address.",
+          });
+        })
+        .catch((error) => {
+          console.log(error);
+          res
+            .status(404)
+            .json({ message: "Something went wrong. Please try again." });
+        });
+    }
+  } catch (error) {}
 };
